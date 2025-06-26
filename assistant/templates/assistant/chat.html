@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Programming Assistant</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+      color: #333;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      overflow: visible;
+      animation: slideUp 0.8s ease-out;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .header {
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      padding: 40px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+      opacity: 0.3;
+    }
+
+    .header h1 {
+      color: white;
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .header .subtitle {
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 1.1rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .form-container {
+      padding: 40px;
+    }
+
+    .form-group {
+      margin-bottom: 30px;
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #374151;
+      font-size: 0.95rem;
+    }
+
+    select, textarea, button {
+      width: 100%;
+      padding: 16px;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      font-family: inherit;
+    }
+
+    select:focus, textarea:focus {
+      outline: none;
+      border-color: #4f46e5;
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+      transform: translateY(-2px);
+    }
+
+    select {
+      background: white;
+      cursor: pointer;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 200px;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      background: #f8fafc;
+      line-height: 1.6;
+    }
+
+    textarea::placeholder {
+      color: #9ca3af;
+    }
+
+    button {
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s;
+    }
+
+    button:hover::before {
+      left: 100%;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(79, 70, 229, 0.3);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    .response-section {
+      margin-top: 30px;
+      background: #f7f7f8;
+      border-radius: 8px;
+      padding: 20px;
+      border: 2px solid rgb(30, 29, 29);
+    }
+
+    .response-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+      gap: 10px;
+    }
+
+    .response-avatar {
+      width: 24px;
+      height: 24px;
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      color: white;
+      font-weight: bold;
+    }
+
+    .response-title {
+      font-size: 14px;
+      font-weight: 600;
+      color:rgb(85, 0, 255);
+    }
+
+    .response-badge {
+      background: #10a37f;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .response-content {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 15px;
+      line-height: 1.6;
+      color: #1a1a1a;
+      white-space: pre-wrap;
+      word-break: break-word;
+      overflow-wrap: break-word;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .floating-elements {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .floating-element {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      animation: float 6s ease-in-out infinite;
+    }
+
+    .floating-element:nth-child(1) {
+      width: 80px;
+      height: 80px;
+      top: 20%;
+      left: 10%;
+      animation-delay: 0s;
+    }
+
+    .floating-element:nth-child(2) {
+      width: 120px;
+      height: 120px;
+      top: 60%;
+      right: 15%;
+      animation-delay: 2s;
+    }
+
+    .floating-element:nth-child(3) {
+      width: 60px;
+      height: 60px;
+      bottom: 20%;
+      left: 20%;
+      animation-delay: 4s;
+    }
+
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(0px);
+      }
+      50% {
+        transform: translateY(-20px);
+      }
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
+      
+      .header h1 {
+        font-size: 2rem;
+      }
+      
+      .form-container {
+        padding: 20px;
+      }
+      
+      select, textarea, button {
+        padding: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="floating-elements">
+    <div class="floating-element"></div>
+    <div class="floating-element"></div>
+    <div class="floating-element"></div>
+  </div>
+
+  <div class="container">
+    <div class="header">
+      <h1>👨‍💻 AI Programming Assistant</h1>
+      <p class="subtitle">Your intelligent code companion powered by Gemini</p>
+    </div>
+
+    <div class="form-container">
+      <form method="post">
+        {% csrf_token %}
+        
+        <div class="form-group">
+          <label for="prompt">What would you like me to help you with?</label>
+          <select name="prompt" id="prompt">
+            <option value="Explain this code">🔍 Explain this code</option>
+            <option value="Debug this code">🐛 Debug this code</option>
+            <option value="What does this function do?">❓ What does this function do?</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="code">Paste your code below:</label>
+          <textarea name="code" id="code" placeholder="// Paste your code here...
+// I'll analyze it and provide helpful insights!
+
+function example() {
+  return 'Hello, World!';
+}"></textarea>
+        </div>
+
+        <button type="submit">✨ Analyze with Gemini</button>
+      </form>
+      <hr style="margin: 30px 0; border: none; border-top: 1px solid #e5e7eb;">
+
+      {% if response %}
+        <div class="response-section">
+          <div class="response-header">
+            <div class="response-avatar">G</div>
+            <div class="response-title">Gemini Analysis 🤖</div>
+            <div class="response-badge">AI</div>
+          </div>
+          <div class="response-content">🌟{{ response |safe }}🌟</div>
+        </div>
+      {% endif %}
+      <hr style="margin: 30px 0; border: none; border-top: 1px solid #e5e7eb;">
+<div style= "border: 1.5px solid rgb(218, 218, 218); padding: 20px; border-radius: 10px; background-color: #f9fafb;">
+    <h2>🕓 Recent Chats</h2>
+    <hr style="margin: 30px 0; border: none; border-top: 1px solid #e5e7eb;">
+<ul >
+  {% for chat in recent_chats %}
+    <li>
+      <details>
+        <summary>
+          <b>{{ chat.user_prompt|truncatechars:60 }}</b>
+          ({{ chat.created_at|date:"M d, H:i" }})
+          <a href="{% url 'delete_chat' chat.id %}" style="margin-left:10px; text-decoration:none;">❌ Delete</a>
+          <hr style="margin: 10px 0; border: none; border-top: 1px solid rgb(255, 255, 255);">
+        </summary>
+        <div style="margin-left:30px;">
+          {{ chat.response|safe }}
+          <hr  style="margin: 10px 0; border: none; border-top: 1px solid rgb(255, 255, 255);">
+          <button onclick="copyToClipboard(this)" style="margin-top:10px;">📋 Copy Response</button>
+          <hr style="margin: 10px 0; border: none; border-top: 1px solid rgb(255, 255, 255);">
+        </div>
+      </details>
+    </li>
+    <hr  style="margin: 10px 0; border: none; border-top: 1px solid #e5e7eb;">
+  {% empty %}
+    <li>No chats yet.</li>
+  {% endfor %}
+</ul>
+<hr style="margin: 30px 0; border: none; border-top: 1px solid #e5e7eb;">
+<form method="post" action="{% url 'clear_chats' %}">
+  {% csrf_token %}
+  <button type="submit" style="background:background: linear-gradient(135deg,rgb(147, 143, 225) 0%,rgb(180, 149, 232) 100%);;color:white;padding:10px 10px;margin-bottom:10px;">🗑️ Clear All</button>
+</form>
+    </div>
+    
+  </div>
+    </div>
+<script>
+function copyToClipboard(button) {
+    const text = button.parentElement.innerText;
+
+    const temp = document.createElement("textarea");
+    temp.value = text;
+    document.body.appendChild(temp);
+    temp.select();
+    document.execCommand("copy");
+    document.body.removeChild(temp);
+
+    button.textContent = "✅ Copied!";
+    setTimeout(() => button.textContent = "📋 Copy Response", 2000);
+}
+</script>
+
+
+</body>
+</html>

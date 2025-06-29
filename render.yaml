@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: ai-assistant
+    env: python
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn programming_assistant.wsgi:application"
+    envVars:
+      - key: GEMINI_API_KEY
+        value: your-key-will-be-added-in-dashboard

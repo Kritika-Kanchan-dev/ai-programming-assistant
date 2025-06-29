@@ -46,10 +46,13 @@ def format_response(text):
     return '\n'.join(bullet_lines)
 
 from .models import Chat  # Import Chat model
-
 def chat_view(request):
+    # Ensure session exists
+    if not request.session.session_key:
+        request.session.create()
+
+    session_key = request.session.session_key
     formatted_response = None
-    recent_chats = Chat.objects.order_by('-created_at')[:5]  # latest 5 chats
 
     if request.method == "POST":
         task = request.POST.get("prompt")
@@ -61,16 +64,19 @@ def chat_view(request):
             result = model.generate_content(full_prompt)
             raw_response = result.text
             formatted_response = format_response(raw_response)
-
-            # Save to database
-            Chat.objects.create(user_prompt=full_prompt, response=formatted_response)
-
+            # existing processing...
+            Chat.objects.create(
+                user_prompt=full_prompt,
+                response=formatted_response,
+                session_key=session_key
+        )
         except Exception as e:
             formatted_response = f"<span style='color:red;'>Error: {str(e)}</span>"
 
-    return render(request, 'assistant/chat.html', {
-        'response': formatted_response,
-        'recent_chats': recent_chats
+    recent_chats = Chat.objects.filter(session_key=session_key).order_by('-created_at')[:5]
+    return render(request, "assistant/chat.html", {
+        "response": formatted_response,
+        "recent_chats": recent_chats
     })
 
 def delete_chat(request, chat_id):
@@ -79,5 +85,6 @@ def delete_chat(request, chat_id):
     return redirect('chat')
 
 def clear_chats(request):
-    Chat.objects.all().delete()
+    session_key = request.session.session_key
+    Chat.objects.filter(session_key=session_key).delete()
     return redirect('chat')
